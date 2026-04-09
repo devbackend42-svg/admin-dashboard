@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #fafbff;
+      font-size: 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      overflow-x: auto;
+    }
+
+    thead th {
+      background: #3f51b5;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 13px;
+      padding: 14px 12px;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: #f3f6ff;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eff2f7;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-size: 13px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .terima { background: #2ecc71; }
+    .tolak { background: #e74c3c; }
+
+    .badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+    }
+
+    .menunggu { background: orange; }
+    .diterima { background: green; }
+    .ditolak { background: red; }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h2>Dashboard Admin Pendaftaran</h2>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="Cari nama / NIP / Instansi..." onkeyup="filterData()">
+    <select id="filter-statusKerja" onchange="filterData()">
+      <option value="all">Semua Status Kerja</option>
+    </select>
+    <select id="filter-kotaKab" onchange="filterData()">
+      <option value="all">Semua Kota/Kab</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>NIP</th>
+        <th>Status Kerja</th>
+        <th>Instansi</th>
+        <th>Kota/Kab</th>
+        <th>Kategori</th>
+        <th>Pengalaman</th>
+        <th>Kegiatan</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="data"></tbody>
+  </table>
+</div>
+
+<script>
+const API_URL = "https://api.sheety.co/4a32581f9c7c0377679052b2eb44ec9b/pendaftaran2026/dataPendaftar";
+
+let globalData = [];
+
+// LOAD DATA
+async function loadData() {
+  const res = await fetch(API_URL);
+  const json = await res.json();
+
+  globalData = json.dataPendaftar;
+  renderFilterOptions(globalData);
+  filterData();
+}
+
+function renderFilterOptions(data) {
+  const statusSet = new Set();
+  const kotaSet = new Set();
+
+  data.forEach(d => {
+    if (d.statusKerja) statusSet.add(d.statusKerja);
+    if (d.kotaKab) kotaSet.add(d.kotaKab);
+  });
+
+  const statusOptions = ["all", ...Array.from(statusSet).sort()];
+  const kotaOptions = ["all", ...Array.from(kotaSet).sort()];
+
+  document.getElementById("filter-statusKerja").innerHTML = statusOptions
+    .map((value, index) => `
+      <option value="${value}" ${index === 0 ? 'selected' : ''}>
+        ${value === 'all' ? 'Semua Status Kerja' : value}
+      </option>
+    `)
+    .join("");
+
+  document.getElementById("filter-kotaKab").innerHTML = kotaOptions
+    .map((value, index) => `
+      <option value="${value}" ${index === 0 ? 'selected' : ''}>
+        ${value === 'all' ? 'Semua Kota/Kab' : value}
+      </option>
+    `)
+    .join("");
+}
+
+// RENDER TABLE
+function renderTable(data) {
+  let html = "";
+
+  if (data.length === 0) {
+    html = `
+      <tr>
+        <td colspan="10">Tidak ada data yang cocok.</td>
+      </tr>
+    `;
+  } else {
+    data.forEach(d => {
+      let badgeClass = "menunggu";
+      if (d.status === "diterima") badgeClass = "diterima";
+      if (d.status === "ditolak") badgeClass = "ditolak";
+
+      html += `
+        <tr>
+          <td>${d.nama}</td>
+          <td>${d.nip}</td>
+          <td>${d.statusKerja}</td>
+          <td>${d.instansi}</td>
+          <td>${d.kotaKab}</td>
+          <td>${d.kategori}</td>
+          <td>${d.pengalaman}</td>
+          <td>${d.kegiatan}</td>
+          <td><span class="badge ${badgeClass}">${d.status}</span></td>
+          <td>
+            <button class="terima" onclick="updateStatus(${d.id}, 'diterima')">Terima</button>
+            <button class="tolak" onclick="updateStatus(${d.id}, 'ditolak')">Tolak</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  document.getElementById("data").innerHTML = html;
+}
+
+// UPDATE STATUS
+async function updateStatus(id, statusBaru) {
+  if (!confirm("Yakin ubah status?")) return;
+
+  await fetch(API_URL + "/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      dataPendaftar: {
+        status: statusBaru
+      }
+    })
+  });
+
+  loadData();
+}
+
+// SEARCH FILTER
+function filterData() {
+  const keyword = document.getElementById("search").value.toLowerCase();
+  const selectedStatus = document.getElementById("filter-statusKerja").value;
+  const selectedKota = document.getElementById("filter-kotaKab").value;
+
+  const filtered = globalData.filter(d => {
+    const matchesKeyword =
+      d.nama.toLowerCase().includes(keyword) ||
+      d.nip.toString().includes(keyword) ||
+      (d.instansi || "").toLowerCase().includes(keyword);
+    const matchesStatus = selectedStatus === "all" || d.statusKerja === selectedStatus;
+    const matchesKota = selectedKota === "all" || d.kotaKab === selectedKota;
+
+    return matchesKeyword && matchesStatus && matchesKota;
+  });
+
+  renderTable(filtered);
+}
+
+// INIT
+loadData();
+</script>
+
+</body>
+</html>
