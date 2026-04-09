@@ -69,7 +69,6 @@
       width: 100%;
       border-collapse: collapse;
       min-width: 980px;
-      overflow-x: auto;
     }
 
     thead th {
@@ -125,6 +124,75 @@
     .diterima { background: green; }
     .ditolak { background: red; }
 
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      .header h2 {
+        font-size: 24px;
+        text-align: left;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      table {
+        font-size: 12px;
+        min-width: 600px; /* Reduced for mobile */
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+
+      button {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+
+      .badge {
+        font-size: 10px;
+        padding: 4px 6px;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .filters {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .container {
+        max-width: 900px;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      .container {
+        max-width: 1200px;
+      }
+    }
+
+    /* Table wrapper for horizontal scroll */
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .table-container table {
+      margin: 0;
+    }
+
   </style>
 </head>
 
@@ -145,23 +213,25 @@
     </select>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Nama</th>
-        <th>NIP</th>
-        <th>Status Kerja</th>
-        <th>Instansi</th>
-        <th>Kota/Kab</th>
-        <th>Kategori</th>
-        <th>Pengalaman</th>
-        <th>Kegiatan</th>
-        <th>Status</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody id="data"></tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>NIP</th>
+          <th>Status Kerja</th>
+          <th>Instansi</th>
+          <th>Kota/Kab</th>
+          <th>Kategori</th>
+          <th>Pengalaman</th>
+          <th>Kegiatan</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="data"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
